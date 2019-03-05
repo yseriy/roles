@@ -1,14 +1,13 @@
 package local.ys.prototype.roles;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.Objects;
 
 public class SubUser {
-    private static final String INSERT_STATEMENT = "insert into auth.platform_subusers (user_id, login, password, description) values(?, ?, ?, ?)";
-    private static final String UPDATE_STATEMENT = "update auth.platform_subusers set user_id = ?, login = ?, password = ?, description = ? where id = ?";
+    private static final String INSERT_STATEMENT = "insert into auth.platform_subusers(" +
+            "user_id, login, password, description) values(?, ?, ?, ?)";
+    private static final String UPDATE_STATEMENT = "update auth.platform_subusers " +
+            "set user_id = ?, login = ?, password = ?, description = ? where id = ?";
     private static final String DELETE_STATEMENT = "delete from auth.platform_subusers where id = ?";
 
     private Integer id;
@@ -16,6 +15,10 @@ public class SubUser {
     private String login;
     private String password;
     private String description;
+
+    SubUser(Integer accountID, String login, String password, String description) {
+        this(null, accountID, login, password, description);
+    }
 
     SubUser(Integer id, Integer accountID, String login, String password, String description) {
         this.id = id;
@@ -74,12 +77,18 @@ public class SubUser {
     }
 
     private void insert(Connection connection) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement(INSERT_STATEMENT)) {
+        try (PreparedStatement statement = connection.prepareStatement(INSERT_STATEMENT,
+                Statement.RETURN_GENERATED_KEYS)) {
+
             statement.setInt(1, accountID);
             statement.setString(2, login);
             statement.setString(3, password);
             setDescription(statement, 4, description);
             statement.executeUpdate();
+
+            ResultSet resultSet = statement.getGeneratedKeys();
+            resultSet.next();
+            id = resultSet.getInt(1);
         }
     }
 

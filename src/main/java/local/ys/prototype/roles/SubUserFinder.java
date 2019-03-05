@@ -6,21 +6,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 
 class SubUserFinder {
-    private static final String FIND_STATEMENT = "select id, user_id, login, password, description from auth.platform_subusers where id = ?";
-    private static final String FIND_BY_ACCOUNT_ID_STATEMENT = "select id, user_id, login, password, description from auth.platform_subusers where user_id = ?";
+    private static final String FIND_STATEMENT = "select id, user_id, login, password, description " +
+            "from auth.platform_subusers where id = ?";
+    private static final String FIND_BY_ACCOUNT_ID_STATEMENT = "select id, user_id, login, password, description " +
+            "from auth.platform_subusers where user_id = ?";
 
-    SubUser find(Connection connection, Integer id) throws SQLException {
+    Optional<SubUser> find(Connection connection, Integer id) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(FIND_STATEMENT)) {
             statement.setInt(1, id);
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
-                return createSubUser(resultSet);
+                return Optional.of(createSubUser(resultSet));
             }
 
-            return null;
+            return Optional.empty();
         }
     }
 
